@@ -8,6 +8,8 @@ from scapy.all import *
 from scapy.arch.windows import get_windows_if_list
 import threading
 
+
+
 class PacketAnalyzer:
     def __init__(self, root):
         self.root = root
@@ -28,14 +30,7 @@ class PacketAnalyzer:
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.top_ips_label = ttk.Label(root, text="Top 5 IPs:")
-        self.top_ips_label.pack()
-
-        self.top_ips_listbox = tk.Listbox(root)
-        self.top_ips_listbox.pack()
-
         self.ip_packets = {}
-        self.top_ips = {}
 
     def start(self):
         self.start_button["state"] = "disabled"
@@ -48,7 +43,7 @@ class PacketAnalyzer:
         for iface in interfaces:
             print(f"Name: {iface['name']}, Description: {iface['description']}")
 
-        # Start packet capturing in a separate thread
+        #Start packet capturing in a separate thread
         capture_thread = threading.Thread(target=self.start_capture)
         capture_thread.start()
 
@@ -64,7 +59,6 @@ class PacketAnalyzer:
             else:
                 self.ip_packets[src_ip] = 1
 
-            self.update_top_ips()
             self.update_graph()
 
     def stop(self):
@@ -78,12 +72,6 @@ class PacketAnalyzer:
         df = pd.DataFrame(self.ip_packets.items(), columns=["IP", "Packets"])
         df.to_excel("packet_info.xlsx", index=False)
         print("Info saved to packet_info.xlsx")
-
-    def update_top_ips(self):
-        sorted_ips = sorted(self.ip_packets.items(), key=lambda x: x[1], reverse=True)
-        self.top_ips_listbox.delete(0, tk.END)
-        for ip, count in sorted_ips[:5]:
-            self.top_ips_listbox.insert(tk.END, f"{ip}: {count}")
 
     def update_graph(self):
         self.ax.clear()
