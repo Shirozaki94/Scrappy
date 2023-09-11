@@ -55,11 +55,14 @@ class PacketAnalyzer:
         self.capture_running = True
 
         def capture():
-            while self.capture_running and not self.stop_event.is_set():
-                sniff(prn=self.process_packet, iface="Ethernet")
+            while self.capture_running:
+                if not self.stop_event.is_set():
+                    sniff(prn=self.process_packet, iface="Ethernet")
 
         capture()
 
+    def stop(self):
+        self.capture_running = False
     def process_packet(self, pkt):
         if IP in pkt and pkt[IP].src == "192.168.1.80":
             src_ip = pkt[IP].src
@@ -80,8 +83,6 @@ class PacketAnalyzer:
 
                     self.update_top_ips()
                     self.update_graph()
-    def stop_capture(self):
-        self.capture_running = False
     def stop(self):
         self.stop_event.set()
         self.start_button["state"] = "active"
@@ -111,6 +112,9 @@ class PacketAnalyzer:
         port_counts = [len(info) for info in self.ip_packets.values()]
         self.ax.bar(ips, port_counts)
         self.canvas.draw()
+
+    def stop_capture(self):
+        pass
 
 
 if __name__ == "__main__":
