@@ -80,14 +80,15 @@ class PacketAnalyzer:
 
                     self.update_top_ips()
                     self.update_graph()
+    def stop_capture(self):
+        self.capture_running = False
 
     def stop(self):
         self.stop_event.set()
         self.start_button["state"] = "active"
         self.stop_button["state"] = "disabled"
         self.save_button["state"] = "active"
-        self.capture_running = False
-
+        self.stop_capture()  # Add this line to stop packet capture
 
     def save_info(self):
         data = []
