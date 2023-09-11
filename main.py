@@ -35,7 +35,6 @@ class PacketAnalyzer:
         self.top_ips_listbox.pack()
 
         self.ip_packets = {}
-        self.top_ips = {}
 
     def start(self):
         self.start_button["state"] = "disabled"
@@ -59,13 +58,16 @@ class PacketAnalyzer:
     def process_packet(self, pkt):
         if IP in pkt and pkt[IP].src == "192.168.1.80":
             src_ip = pkt[IP].src
-            if src_ip in self.ip_packets:
-                self.ip_packets[src_ip] += 1
-            else:
-                self.ip_packets[src_ip] = 1
+            dst_ip = pkt[IP].dst
 
-            self.update_top_ips()
-            self.update_graph()
+            if dst_ip != "192.168.1.80":
+                if dst_ip in self.ip_packets:
+                    self.ip_packets[dst_ip] += 1
+                else:
+                    self.ip_packets[dst_ip] = 1
+
+                self.update_top_ips()
+                self.update_graph()
 
     def stop(self):
         self.start_button["state"] = "active"
