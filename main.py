@@ -1,10 +1,14 @@
-from telnetlib import IP
-from scapy.all import *
 import tkinter as tk
+from scapy.all import IP
 from tkinter import ttk
+import pandas as pd
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import pandas as pd
+from scapy.all import *
+from scapy.arch.windows import get_windows_if_list
+import threading
+
+
 
 class PacketAnalyzer:
     def __init__(self, root):
@@ -33,11 +37,22 @@ class PacketAnalyzer:
         self.stop_button["state"] = "active"
         self.save_button["state"] = "disabled"
 
-        # Start packet capturing
-        sniff(prn=self.process_packet)
+        # Print available interfaces
+        interfaces = get_windows_if_list()
+        print("Available Interfaces:")
+        for iface in interfaces:
+            print(f"Name: {iface['name']}, Description: {iface['description']}")
+
+        #Start packet capturing in a separate thread
+        capture_thread = threading.Thread(target=self.start_capture)
+        capture_thread.start()
+
+    def start_capture(self):
+        # Update with the correct interface name
+        sniff(prn=self.process_packet, iface="Ethernet")  # Update with the correct interface name
 
     def process_packet(self, pkt):
-        if IP in pkt:
+        if IP in pkt and pkt[IP].src == "192.168.1.80":
             src_ip = pkt[IP].src
             if src_ip in self.ip_packets:
                 self.ip_packets[src_ip] += 1
