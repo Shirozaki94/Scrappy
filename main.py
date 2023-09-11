@@ -5,6 +5,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from scapy.arch.windows import get_windows_if_list
 import threading
+import pandas as pd
 
 
 class PacketAnalyzer:
@@ -47,13 +48,18 @@ class PacketAnalyzer:
         for iface in interfaces:
             print(f"Name: {iface['name']}, Description: {iface['description']}")
 
-        # Start packet capturing in a separate thread
         self.sniff_thread = threading.Thread(target=self.start_capture)
         self.sniff_thread.start()
 
     def start_capture(self):
         self.capture_running = True
-        sniff(prn=self.process_packet, iface="Ethernet")
+
+        def capture():
+            if self.capture_running:
+                sniff(prn=self.process_packet, iface="Ethernet")
+                self.root.after(100, capture)
+
+        capture()
 
     def process_packet(self, pkt):
         if IP in pkt and pkt[IP].src == "192.168.1.80":
@@ -65,38 +71,42 @@ class PacketAnalyzer:
                 src_port = pkt[TCP].sport if TCP in pkt else pkt[UDP].sport if UDP in pkt else None
 
                 if dst_port and src_port:
-                    packet_info = f"IP: {dst_ip}, Port: {dst_port}"
+                    f"IP: {dst_ip}, Port: {dst_port}, Packets Sent: {pkt.summary()}"
 
                     if dst_ip in self.ip_packets:
-                        self.ip_packets[dst_ip].add(dst_port)
+                        self.ip_packets[dst_ip].add((dst_port, pkt.summary()))
                     else:
-                        self.ip_packets[dst_ip] = {dst_port}
+                        self.ip_packets[dst_ip] = {(dst_port, pkt.summary())}
 
                     self.update_top_ips()
                     self.update_graph()
 
     def stop(self):
         self.capture_running = False
-        self.sniff_thread.join()  # Wait for the capture thread to finish
-
         self.start_button["state"] = "active"
         self.stop_button["state"] = "disabled"
         self.save_button["state"] = "active"
 
     def save_info(self):
-        # Save info to a file (if needed)
-        pass
+        data = []
+        for ip, info in self.ip_packets.items():
+            for port, packets in info:
+                data.append([ip, port, packets])
+
+        df = pd.DataFrame(data, columns=["IP", "Port", "Packets"])
+        df.to_excel("packet_info.xlsx", index=False)
+        print("Info saved to packet_info.xlsx")
 
     def update_top_ips(self):
         self.top_ips_listbox.delete(0, tk.END)
-        for ip, ports in self.ip_packets.items():
-            for port in ports:
-                self.top_ips_listbox.insert(tk.END, f"IP: {ip}, Port: {port}")
+        for ip, info in self.ip_packets.items():
+            for port, packets in info:
+                self.top_ips_listbox.insert(tk.END, f"IP: {ip}, Port: {port}, Packets Sent: {packets}")
 
     def update_graph(self):
         self.ax.clear()
         ips = list(self.ip_packets.keys())
-        port_counts = [len(ports) for ports in self.ip_packets.values()]
+        port_counts = [len(info) for info in self.ip_packets.values()]
         self.ax.bar(ips, port_counts)
         self.canvas.draw()
 
