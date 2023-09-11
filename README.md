@@ -36,6 +36,3 @@ License
 This project is licensed under the MIT License.
 
 Note: Scrappy is provided as-is and is not responsible for any unauthorized use or access to network data. Please use responsibly and in compliance with applicable laws and regulations.
-
-
-You can use this `README.md` as a starting point for your GitHub repository. Make sure to replace placeholders like `[MIT License](LICENSE)` with actual links and paths.
