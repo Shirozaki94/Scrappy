@@ -18,7 +18,7 @@ class PacketAnalyzer:
 
         self.stop_button = ttk.Button(root, text="Stop", command=self.stop, state="disabled")
         self.stop_button.pack(pady=10)
-
+        self.stop_event = threading.Event()
         self.save_button = ttk.Button(root, text="Save Info", command=self.save_info, state="disabled")
         self.save_button.pack(pady=10)
 
@@ -55,9 +55,8 @@ class PacketAnalyzer:
         self.capture_running = True
 
         def capture():
-            if self.capture_running:
+            while self.capture_running and not self.stop_event.is_set():  # Check event flag
                 sniff(prn=self.process_packet, iface="Ethernet")
-                self.root.after(100, capture)
 
         capture()
 
@@ -71,7 +70,8 @@ class PacketAnalyzer:
                 src_port = pkt[TCP].sport if TCP in pkt else pkt[UDP].sport if UDP in pkt else None
 
                 if dst_port and src_port:
-                    f"IP: {dst_ip}, Port: {dst_port}, Packets Sent: {pkt.summary()}"
+                    print(
+                        f"Source IP: {src_ip}, Destination IP: {dst_ip}, Destination Port: {dst_port}, Packets Sent: {pkt.summary()}")
 
                     if dst_ip in self.ip_packets:
                         self.ip_packets[dst_ip].add((dst_port, pkt.summary()))
@@ -82,10 +82,12 @@ class PacketAnalyzer:
                     self.update_graph()
 
     def stop(self):
-        self.capture_running = False
+        self.stop_event.set()
         self.start_button["state"] = "active"
         self.stop_button["state"] = "disabled"
         self.save_button["state"] = "active"
+        self.capture_running = False
+
 
     def save_info(self):
         data = []
