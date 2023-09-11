@@ -55,7 +55,7 @@ class PacketAnalyzer:
         self.capture_running = True
 
         def capture():
-            while self.capture_running and not self.stop_event.is_set():  # Check event flag
+            while self.capture_running and not self.stop_event.is_set():
                 sniff(prn=self.process_packet, iface="Ethernet")
 
         capture()
@@ -82,7 +82,7 @@ class PacketAnalyzer:
                     self.update_graph()
     def stop_capture(self):
         self.capture_running = False
-
+        stop_capture()
     def stop(self):
         self.stop_event.set()
         self.start_button["state"] = "active"
