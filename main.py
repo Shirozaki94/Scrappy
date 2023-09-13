@@ -63,6 +63,7 @@ class PacketAnalyzer:
 
     def stop(self):
         self.capture_running = False
+
     def process_packet(self, pkt):
         if IP in pkt and pkt[IP].src == "192.168.1.80":
             src_ip = pkt[IP].src
@@ -83,6 +84,7 @@ class PacketAnalyzer:
 
                     self.update_top_ips()
                     self.update_graph()
+
     def stop(self):
         self.stop_event.set()
         self.start_button["state"] = "active"
@@ -115,6 +117,7 @@ class PacketAnalyzer:
 
     def stop_capture(self):
         pass
+
     print("SALUT")
 
 
