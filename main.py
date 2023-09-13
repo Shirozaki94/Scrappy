@@ -115,6 +115,7 @@ class PacketAnalyzer:
 
     def stop_capture(self):
         pass
+    print("SALUT")
 
 
 if __name__ == "__main__":
