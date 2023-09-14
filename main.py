@@ -61,7 +61,6 @@ class PacketAnalyzer:
         self.start_button["state"] = "disabled"
         self.stop_button["state"] = "active"
         self.save_button["state"] = "disabled"
-
         self.capture_running = True
         self.sniff_thread = threading.Thread(target=self.start_capture)
         self.sniff_thread.start()
