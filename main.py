@@ -72,7 +72,6 @@ class PacketAnalyzer:
 
         self.capture_running = True
 
-
     def stop(self):
         self.capture_running = False
         self.stop_event.set()
