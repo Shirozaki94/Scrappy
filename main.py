@@ -71,18 +71,13 @@ class PacketAnalyzer:
         while self.capture_running and not self.stop_event.is_set():
             sniff(prn=self.process_packet, iface=selected_interface, count=10)  # Process up to 10 packets per call
 
-        def capture():
-            while self.capture_running and not self.stop_event.is_set():
-                sniff(prn=self.process_packet, iface=selected_interface, count=10)  # Process up to 10 packets per call
-
         self.capture_running = True
-        capture()
+
 
     def stop(self):
         self.capture_running = False
         self.stop_event.set()
-        if self.sniff_thread:
-            self.sniff_thread.join()
+        self.sniff_thread.join()  # Wait for the thread to finish
         self.start_button["state"] = "active"
         self.stop_button["state"] = "disabled"
         self.save_button["state"] = "active"
